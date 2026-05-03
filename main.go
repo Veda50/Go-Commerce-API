@@ -28,7 +28,7 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 
 	// Services
-	authService := service.NewAuthService(userRepo)
+	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService)
@@ -40,6 +40,7 @@ func main() {
 
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/signup", authHandler.Signup)
+		r.Post("/login", authHandler.Login)
 	})
 
 	fmt.Printf("Server starting on port %s\n", cfg.Port)
