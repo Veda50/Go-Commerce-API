@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/user/go-commerce-api/internal/config"
+	"github.com/user/go-commerce-api/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -13,6 +14,12 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 		cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBPort, cfg.DBSSLMode)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Auto Migration
+	err = db.AutoMigrate(&model.User{})
 	if err != nil {
 		return nil, err
 	}
