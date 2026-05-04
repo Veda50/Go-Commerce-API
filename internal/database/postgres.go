@@ -19,7 +19,11 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 	}
 
 	// Auto Migration
-	err = db.AutoMigrate(&model.User{})
+	err = db.AutoMigrate(
+		&model.User{},
+		&model.Category{},
+		&model.Product{},
+	)
 	if err != nil {
 		return nil, err
 	}
