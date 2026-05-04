@@ -16,3 +16,13 @@ func NewProductRepository(db *gorm.DB) *ProductRepository {
 func (r *ProductRepository) Create(product *model.Product) error {
 	return r.db.Create(product).Error
 }
+
+func (r *ProductRepository) FindAll(query string) ([]model.Product, error) {
+	var products []model.Product
+	db := r.db.Preload("Category")
+	if query != "" {
+		db = db.Where("name ILIKE ?", "%"+query+"%")
+	}
+	err := db.Find(&products).Error
+	return products, err
+}

@@ -16,3 +16,7 @@ func NewProductService(productRepo *repository.ProductRepository) *ProductServic
 func (s *ProductService) CreateProduct(product *model.Product) error {
 	return s.productRepo.Create(product)
 }
+
+func (s *ProductService) ListProducts(query string) ([]model.Product, error) {
+	return s.productRepo.FindAll(query)
+}

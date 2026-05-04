@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/user/go-commerce-api/internal/config"
 	"github.com/user/go-commerce-api/internal/database"
 	"github.com/user/go-commerce-api/internal/handler"
@@ -36,20 +36,23 @@ func main() {
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService)
 	adminHandler := handler.NewAdminHandler(productService)
+	productHandler := handler.NewProductHandler(productService)
 
 	// Router
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	r.Use(chimiddleware.Logger)
+	r.Use(chimiddleware.Recoverer)
 
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/signup", authHandler.Signup)
 		r.Post("/login", authHandler.Login)
 	})
 
+	r.Get("/products", productHandler.ListProducts)
+
 	r.Route("/admin", func(r chi.Router) {
-		r.Use(customMiddleware.Auth(cfg.JWTSecret))
-		r.Use(customMiddleware.AdminOnly)
+		r.Use(middleware.Auth(cfg.JWTSecret))
+		r.Use(middleware.AdminOnly)
 		r.Post("/products", adminHandler.CreateProduct)
 	})
 
