@@ -10,6 +10,7 @@ import (
 	"github.com/user/go-commerce-api/internal/config"
 	"github.com/user/go-commerce-api/internal/database"
 	"github.com/user/go-commerce-api/internal/handler"
+	"github.com/user/go-commerce-api/internal/middleware"
 	"github.com/user/go-commerce-api/internal/repository"
 	"github.com/user/go-commerce-api/internal/service"
 )
@@ -26,12 +27,15 @@ func main() {
 
 	// Repositories
 	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
+	productService := service.NewProductService(productRepo)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService)
+	adminHandler := handler.NewAdminHandler(productService)
 
 	// Router
 	r := chi.NewRouter()
@@ -41,6 +45,12 @@ func main() {
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/signup", authHandler.Signup)
 		r.Post("/login", authHandler.Login)
+	})
+
+	r.Route("/admin", func(r chi.Router) {
+		r.Use(customMiddleware.Auth(cfg.JWTSecret))
+		r.Use(customMiddleware.AdminOnly)
+		r.Post("/products", adminHandler.CreateProduct)
 	})
 
 	fmt.Printf("Server starting on port %s\n", cfg.Port)

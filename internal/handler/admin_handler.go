@@ -1,0 +1,34 @@
+package handler
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/user/go-commerce-api/internal/model"
+	"github.com/user/go-commerce-api/internal/service"
+)
+
+type AdminHandler struct {
+	productService *service.ProductService
+}
+
+func NewAdminHandler(productService *service.ProductService) *AdminHandler {
+	return &AdminHandler{productService: productService}
+}
+
+func (h *AdminHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
+	var product model.Product
+	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.productService.CreateProduct(&product); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(product)
+}
