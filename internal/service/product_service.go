@@ -20,3 +20,7 @@ func (s *ProductService) CreateProduct(product *model.Product) error {
 func (s *ProductService) ListProducts(query string) ([]model.Product, error) {
 	return s.productRepo.FindAll(query)
 }
+
+func (s *ProductService) GetProduct(id string) (*model.Product, error) {
+	return s.productRepo.FindByID(id)
+}

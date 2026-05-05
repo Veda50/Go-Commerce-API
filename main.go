@@ -48,7 +48,10 @@ func main() {
 		r.Post("/login", authHandler.Login)
 	})
 
-	r.Get("/products", productHandler.ListProducts)
+	r.Route("/products", func(r chi.Router) {
+		r.Get("/", productHandler.ListProducts)
+		r.Get("/{id}", productHandler.GetProduct)
+	})
 
 	r.Route("/admin", func(r chi.Router) {
 		r.Use(middleware.Auth(cfg.JWTSecret))

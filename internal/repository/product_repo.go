@@ -26,3 +26,12 @@ func (r *ProductRepository) FindAll(query string) ([]model.Product, error) {
 	err := db.Find(&products).Error
 	return products, err
 }
+
+func (r *ProductRepository) FindByID(id string) (*model.Product, error) {
+	var product model.Product
+	err := r.db.Preload("Category").First(&product, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &product, nil
+}
