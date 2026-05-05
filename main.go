@@ -23,7 +23,7 @@ func main() {
 		log.Fatal("failed to connect to database:", err)
 	}
 
-	fmt.Printf("Connected to database %s on %s:%s\n", cfg.DBName, cfg.DBHost, cfg.DBPort)
+	fmt.Println("Database connection and migration successful")
 
 	// Repositories
 	userRepo := repository.NewUserRepository(db)
