@@ -28,15 +28,18 @@ func main() {
 	// Repositories
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
+	cartRepo := repository.NewCartRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
 	productService := service.NewProductService(productRepo)
+	cartService := service.NewCartService(cartRepo, productRepo)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService)
 	adminHandler := handler.NewAdminHandler(productService)
 	productHandler := handler.NewProductHandler(productService)
+	cartHandler := handler.NewCartHandler(cartService)
 
 	// Router
 	r := chi.NewRouter()
@@ -51,6 +54,11 @@ func main() {
 	r.Route("/products", func(r chi.Router) {
 		r.Get("/", productHandler.ListProducts)
 		r.Get("/{id}", productHandler.GetProduct)
+	})
+
+	r.Route("/cart", func(r chi.Router) {
+		r.Use(middleware.Auth(cfg.JWTSecret))
+		r.Post("/items", cartHandler.AddToCart)
 	})
 
 	r.Route("/admin", func(r chi.Router) {
