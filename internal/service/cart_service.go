@@ -68,3 +68,7 @@ func (s *CartService) AddToCart(userID uuid.UUID, productID uint, quantity int) 
 	item.Quantity += quantity
 	return s.cartRepo.UpdateItem(item)
 }
+
+func (s *CartService) GetCart(userID uuid.UUID) (*model.Cart, error) {
+	return s.cartRepo.FindActiveWithItems(userID)
+}

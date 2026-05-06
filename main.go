@@ -58,6 +58,7 @@ func main() {
 
 	r.Route("/cart", func(r chi.Router) {
 		r.Use(middleware.Auth(cfg.JWTSecret))
+		r.Get("/", cartHandler.GetCart)
 		r.Post("/items", cartHandler.AddToCart)
 	})
 

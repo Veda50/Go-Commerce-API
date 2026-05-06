@@ -23,6 +23,15 @@ func (r *CartRepository) FindActiveByUserID(userID uuid.UUID) (*model.Cart, erro
 	return &cart, nil
 }
 
+func (r *CartRepository) FindActiveWithItems(userID uuid.UUID) (*model.Cart, error) {
+	var cart model.Cart
+	err := r.db.Preload("Items.Product").Where("user_id = ? AND status = ?", userID, model.CartActive).First(&cart).Error
+	if err != nil {
+		return nil, err
+	}
+	return &cart, nil
+}
+
 func (r *CartRepository) Create(cart *model.Cart) error {
 	return r.db.Create(cart).Error
 }
