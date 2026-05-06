@@ -57,6 +57,7 @@ func main() {
 		r.Use(middleware.Auth(cfg.JWTSecret))
 		r.Use(middleware.AdminOnly)
 		r.Post("/products", adminHandler.CreateProduct)
+		r.Put("/products/{id}", adminHandler.UpdateProduct)
 	})
 
 	fmt.Printf("Server starting on port %s\n", cfg.Port)
