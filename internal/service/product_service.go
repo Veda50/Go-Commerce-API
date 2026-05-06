@@ -43,3 +43,7 @@ func (s *ProductService) UpdateProduct(id string, input *model.Product) (*model.
 
 	return product, nil
 }
+
+func (s *ProductService) DeleteProduct(id string) error {
+	return s.productRepo.Delete(id)
+}

@@ -58,6 +58,7 @@ func main() {
 		r.Use(middleware.AdminOnly)
 		r.Post("/products", adminHandler.CreateProduct)
 		r.Put("/products/{id}", adminHandler.UpdateProduct)
+		r.Delete("/products/{id}", adminHandler.DeleteProduct)
 	})
 
 	fmt.Printf("Server starting on port %s\n", cfg.Port)

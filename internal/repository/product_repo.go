@@ -39,3 +39,7 @@ func (r *ProductRepository) FindByID(id string) (*model.Product, error) {
 func (r *ProductRepository) Update(product *model.Product) error {
 	return r.db.Save(product).Error
 }
+
+func (r *ProductRepository) Delete(id string) error {
+	return r.db.Delete(&model.Product{}, id).Error
+}
