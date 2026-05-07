@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/user/go-commerce-api/internal/middleware"
 	"github.com/user/go-commerce-api/internal/service"
@@ -68,7 +69,6 @@ func (h *CartHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Hitung total dan subtotal
 	var total float64
 	type itemResponse struct {
 		ID        uint    `json:"id"`
@@ -98,4 +98,26 @@ func (h *CartHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		"items": items,
 		"total": total,
 	})
+}
+
+func (h *CartHandler) RemoveItem(w http.ResponseWriter, r *http.Request) {
+	itemID := chi.URLParam(r, "id")
+	userIDStr, ok := r.Context().Value(middleware.UserIDKey).(string)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		http.Error(w, "invalid user id", http.StatusUnauthorized)
+		return
+	}
+
+	if err := h.cartService.RemoveFromCart(userID, itemID); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

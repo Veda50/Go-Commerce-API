@@ -23,7 +23,6 @@ func NewCartService(cartRepo *repository.CartRepository, productRepo *repository
 }
 
 func (s *CartService) AddToCart(userID uuid.UUID, productID uint, quantity int) error {
-	// 1. Cek stok produk
 	product, err := s.productRepo.FindByID(fmt.Sprintf("%d", productID))
 	if err != nil {
 		return errors.New("product not found")
@@ -33,7 +32,6 @@ func (s *CartService) AddToCart(userID uuid.UUID, productID uint, quantity int) 
 		return errors.New("insufficient stock")
 	}
 
-	// 2. Ambil atau buat cart aktif
 	cart, err := s.cartRepo.FindActiveByUserID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -46,7 +44,6 @@ func (s *CartService) AddToCart(userID uuid.UUID, productID uint, quantity int) 
 		}
 	}
 
-	// 3. Tambah atau update item
 	item, err := s.cartRepo.FindItem(cart.ID, productID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -60,7 +57,6 @@ func (s *CartService) AddToCart(userID uuid.UUID, productID uint, quantity int) 
 		return err
 	}
 
-	// Update quantity jika sudah ada
 	if product.Stock < item.Quantity+quantity {
 		return errors.New("insufficient stock for updated quantity")
 	}
@@ -71,4 +67,22 @@ func (s *CartService) AddToCart(userID uuid.UUID, productID uint, quantity int) 
 
 func (s *CartService) GetCart(userID uuid.UUID) (*model.Cart, error) {
 	return s.cartRepo.FindActiveWithItems(userID)
+}
+
+func (s *CartService) RemoveFromCart(userID uuid.UUID, itemID string) error {
+	cart, err := s.cartRepo.FindActiveByUserID(userID)
+	if err != nil {
+		return errors.New("no active cart found")
+	}
+
+	item, err := s.cartRepo.FindItemByID(itemID)
+	if err != nil {
+		return errors.New("item not found in cart")
+	}
+
+	if item.CartID != cart.ID {
+		return errors.New("item does not belong to user's cart")
+	}
+
+	return s.cartRepo.DeleteItem(itemID)
 }

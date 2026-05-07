@@ -49,6 +49,19 @@ func (r *CartRepository) FindItem(cartID uint, productID uint) (*model.CartItem,
 	return &item, nil
 }
 
+func (r *CartRepository) FindItemByID(itemID string) (*model.CartItem, error) {
+	var item model.CartItem
+	err := r.db.First(&item, itemID).Error
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
+}
+
 func (r *CartRepository) UpdateItem(item *model.CartItem) error {
 	return r.db.Save(item).Error
+}
+
+func (r *CartRepository) DeleteItem(itemID string) error {
+	return r.db.Delete(&model.CartItem{}, itemID).Error
 }

@@ -60,6 +60,7 @@ func main() {
 		r.Use(middleware.Auth(cfg.JWTSecret))
 		r.Get("/", cartHandler.GetCart)
 		r.Post("/items", cartHandler.AddToCart)
+		r.Delete("/items/{id}", cartHandler.RemoveItem)
 	})
 
 	r.Route("/admin", func(r chi.Router) {
