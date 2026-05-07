@@ -32,6 +32,8 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 		&model.Product{},
 		&model.Cart{},
 		&model.CartItem{},
+		&model.Order{},
+		&model.OrderItem{},
 	)
 	if err != nil {
 		return nil, err
