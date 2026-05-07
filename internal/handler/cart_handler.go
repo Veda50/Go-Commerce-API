@@ -80,17 +80,19 @@ func (h *CartHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	items := make([]itemResponse, 0)
-	for _, item := range cart.Items {
-		subtotal := item.Product.Price * float64(item.Quantity)
-		total += subtotal
-		items = append(items, itemResponse{
-			ID:        item.ID,
-			ProductID: item.ProductID,
-			Name:      item.Product.Name,
-			Price:     item.Product.Price,
-			Quantity:  item.Quantity,
-			Subtotal:  subtotal,
-		})
+	if cart != nil {
+		for _, item := range cart.Items {
+			subtotal := item.Product.Price * float64(item.Quantity)
+			total += subtotal
+			items = append(items, itemResponse{
+				ID:        item.ID,
+				ProductID: item.ProductID,
+				Name:      item.Product.Name,
+				Price:     item.Product.Price,
+				Quantity:  item.Quantity,
+				Subtotal:  subtotal,
+			})
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -120,4 +122,36 @@ func (h *CartHandler) RemoveItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *CartHandler) UpdateQuantity(w http.ResponseWriter, r *http.Request) {
+	itemID := chi.URLParam(r, "id")
+	var req struct {
+		Quantity int `json:"quantity"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	userIDStr, ok := r.Context().Value(middleware.UserIDKey).(string)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		http.Error(w, "invalid user id", http.StatusUnauthorized)
+		return
+	}
+
+	if err := h.cartService.UpdateQuantity(userID, itemID, req.Quantity); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "quantity updated"})
 }

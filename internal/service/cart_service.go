@@ -86,3 +86,31 @@ func (s *CartService) RemoveFromCart(userID uuid.UUID, itemID string) error {
 
 	return s.cartRepo.DeleteItem(itemID)
 }
+
+func (s *CartService) UpdateQuantity(userID uuid.UUID, itemID string, quantity int) error {
+	cart, err := s.cartRepo.FindActiveByUserID(userID)
+	if err != nil {
+		return errors.New("no active cart found")
+	}
+
+	item, err := s.cartRepo.FindItemByID(itemID)
+	if err != nil {
+		return errors.New("item not found in cart")
+	}
+
+	if item.CartID != cart.ID {
+		return errors.New("item does not belong to user's cart")
+	}
+
+	product, err := s.productRepo.FindByID(fmt.Sprintf("%d", item.ProductID))
+	if err != nil {
+		return errors.New("product not found")
+	}
+
+	if product.Stock < quantity {
+		return errors.New("insufficient stock")
+	}
+
+	item.Quantity = quantity
+	return s.cartRepo.UpdateItem(item)
+}
