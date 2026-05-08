@@ -10,21 +10,22 @@ import (
 )
 
 type OrderService struct {
-	orderRepo *repository.OrderRepository
-	cartRepo  *repository.CartRepository
-	db        *gorm.DB
+	orderRepo   *repository.OrderRepository
+	cartRepo    *repository.CartRepository
+	productRepo *repository.ProductRepository
+	db          *gorm.DB
 }
 
-func NewOrderService(orderRepo *repository.OrderRepository, cartRepo *repository.CartRepository, db *gorm.DB) *OrderService {
+func NewOrderService(orderRepo *repository.OrderRepository, cartRepo *repository.CartRepository, productRepo *repository.ProductRepository, db *gorm.DB) *OrderService {
 	return &OrderService{
-		orderRepo: orderRepo,
-		cartRepo:  cartRepo,
-		db:        db,
+		orderRepo:   orderRepo,
+		cartRepo:    cartRepo,
+		productRepo: productRepo,
+		db:          db,
 	}
 }
 
 func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, error) {
-	// Gunakan transaction untuk memastikan atomicity
 	tx := s.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -32,7 +33,6 @@ func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, error) {
 		}
 	}()
 
-	// 1. Ambil cart aktif beserta item
 	var cart model.Cart
 	if err := tx.Preload("Items.Product").Where("user_id = ? AND status = ?", userID, model.CartActive).First(&cart).Error; err != nil {
 		tx.Rollback()
@@ -44,13 +44,11 @@ func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, error) {
 		return nil, errors.New("cart is empty")
 	}
 
-	// 2. Hitung total amount
 	var total float64
 	for _, item := range cart.Items {
 		total += item.Product.Price * float64(item.Quantity)
 	}
 
-	// 3. Buat Order
 	order := &model.Order{
 		UserID:      userID,
 		Status:      model.OrderPending,
@@ -62,21 +60,25 @@ func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, error) {
 		return nil, err
 	}
 
-	// 4. Buat OrderItems (snapshot harga)
 	for _, item := range cart.Items {
 		orderItem := model.OrderItem{
 			OrderID:   order.ID,
 			ProductID: item.ProductID,
 			Quantity:  item.Quantity,
-			Price:     item.Product.Price, // Snapshot harga sekarang
+			Price:     item.Product.Price,
 		}
 		if err := tx.Create(&orderItem).Error; err != nil {
 			tx.Rollback()
 			return nil, err
 		}
+
+		// Potong stok produk
+		if err := s.productRepo.DeductStock(tx, item.ProductID, item.Quantity); err != nil {
+			tx.Rollback()
+			return nil, err
+		}
 	}
 
-	// 5. Ubah status cart jadi completed
 	if err := tx.Model(&cart).Update("status", model.CartCompleted).Error; err != nil {
 		tx.Rollback()
 		return nil, err
