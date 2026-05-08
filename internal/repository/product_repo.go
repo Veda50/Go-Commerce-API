@@ -43,3 +43,8 @@ func (r *ProductRepository) Update(product *model.Product) error {
 func (r *ProductRepository) Delete(id string) error {
 	return r.db.Delete(&model.Product{}, id).Error
 }
+
+func (r *ProductRepository) DeductStock(tx *gorm.DB, productID uint, quantity int) error {
+	return tx.Model(&model.Product{}).Where("id = ?", productID).
+		Update("stock", gorm.Expr("stock - ?", quantity)).Error
+}
