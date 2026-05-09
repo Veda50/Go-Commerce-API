@@ -13,21 +13,19 @@ type PaymentService struct {
 }
 
 func NewPaymentService(secretKey string) *PaymentService {
-	cfg := xendit.NewConfiguration()
-	cfg.DefaultHeader["Authorization"] = "Basic " + secretKey
-	client := xendit.NewAPIClient(cfg)
+	client := xendit.NewClient(secretKey)
 	return &PaymentService{client: client}
 }
 
 func (s *PaymentService) CreateInvoice(orderID uint, amount float64, email string) (string, string, error) {
-	createInvoiceRequest := *invoice.NewCreateInvoiceRequest(
+	createInvoiceRequest := invoice.NewCreateInvoiceRequest(
 		fmt.Sprintf("ORDER-%d", orderID),
 		amount,
 	)
-	createInvoiceRequest.SetCustomerEmail(email)
+	createInvoiceRequest.SetPayerEmail(email)
 
 	inv, _, err := s.client.InvoiceApi.CreateInvoice(context.Background()).
-		CreateInvoiceRequest(createInvoiceRequest).
+		CreateInvoiceRequest(*createInvoiceRequest).
 		Execute()
 
 	if err != nil {
@@ -37,16 +35,15 @@ func (s *PaymentService) CreateInvoice(orderID uint, amount float64, email strin
 	return inv.GetId(), inv.GetExternalId(), nil
 }
 
-// Xendit Invoice doesn't return client_secret like Stripe, it returns a URL.
 func (s *PaymentService) CreateInvoiceURL(orderID uint, amount float64, email string) (string, string, error) {
-	createInvoiceRequest := *invoice.NewCreateInvoiceRequest(
+	createInvoiceRequest := invoice.NewCreateInvoiceRequest(
 		fmt.Sprintf("ORDER-%d", orderID),
 		amount,
 	)
-	createInvoiceRequest.SetCustomerEmail(email)
+	createInvoiceRequest.SetPayerEmail(email)
 
 	inv, _, err := s.client.InvoiceApi.CreateInvoice(context.Background()).
-		CreateInvoiceRequest(createInvoiceRequest).
+		CreateInvoiceRequest(*createInvoiceRequest).
 		Execute()
 
 	if err != nil {
