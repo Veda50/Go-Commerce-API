@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/google/uuid"
 	"github.com/user/go-commerce-api/internal/model"
 	"gorm.io/gorm"
 )
@@ -29,4 +30,19 @@ func (r *OrderRepository) FindAll(status string) ([]model.Order, error) {
 	}
 	err := db.Find(&orders).Error
 	return orders, err
+}
+
+func (r *OrderRepository) FindByUserID(userID uuid.UUID) ([]model.Order, error) {
+	var orders []model.Order
+	err := r.db.Preload("Items.Product").Where("user_id = ?", userID).Order("created_at desc").Find(&orders).Error
+	return orders, err
+}
+
+func (r *OrderRepository) FindByPaymentID(paymentID string) (*model.Order, error) {
+	var order model.Order
+	err := r.db.Where("payment_intent_id = ?", paymentID).First(&order).Error
+	if err != nil {
+		return nil, err
+	}
+	return &order, nil
 }

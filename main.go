@@ -43,7 +43,7 @@ func main() {
 	adminHandler := handler.NewAdminHandler(productService, orderRepo)
 	productHandler := handler.NewProductHandler(productService)
 	cartHandler := handler.NewCartHandler(cartService)
-	orderHandler := handler.NewOrderHandler(orderService)
+	orderHandler := handler.NewOrderHandler(orderService, orderRepo)
 	webhookHandler := handler.NewWebhookHandler(orderService, cfg)
 
 	// Router
@@ -67,6 +67,11 @@ func main() {
 		r.Post("/items", cartHandler.AddToCart)
 		r.Patch("/items/{id}", cartHandler.UpdateQuantity)
 		r.Delete("/items/{id}", cartHandler.RemoveItem)
+	})
+
+	r.Route("/orders", func(r chi.Router) {
+		r.Use(middleware.Auth(cfg.JWTSecret))
+		r.Get("/", orderHandler.GetHistory)
 	})
 
 	r.Post("/checkout", func(w http.ResponseWriter, r *http.Request) {
