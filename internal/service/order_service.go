@@ -119,5 +119,15 @@ func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, string, error) 
 }
 
 func (s *OrderService) UpdateOrderStatus(paymentID string, status model.OrderStatus) error {
+	order, err := s.orderRepo.FindByPaymentID(paymentID)
+	if err != nil {
+		return err
+	}
+
+	// Idempotency check: jika status sudah sama atau sudah final, abaikan
+	if order.Status == status || order.Status == model.OrderPaid {
+		return nil
+	}
+
 	return s.orderRepo.UpdateStatusByPaymentID(paymentID, status)
 }
