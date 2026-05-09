@@ -30,7 +30,8 @@ This project is built to maintain and demonstrate proficiency in Go backend deve
 
 1. Copy .env.example to .env and fill variables
 2. go mod download
-3. go run main.go
+3. Expose port 8080 for webhooks (use ngrok, Xendit CLI, or my personal `tunnel.vedabe.com` subdomain)
+4. go run main.go
 
 ## API Endpoints
 
