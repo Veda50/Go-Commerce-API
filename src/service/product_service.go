@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/user/go-commerce-api/internal/model"
-	"github.com/user/go-commerce-api/internal/repository"
+	"github.com/user/go-commerce-api/src/model"
+	"github.com/user/go-commerce-api/src/repository"
 )
 
 type ProductService struct {

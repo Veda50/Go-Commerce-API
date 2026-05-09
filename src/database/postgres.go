@@ -3,8 +3,8 @@ package database
 import (
 	"fmt"
 
-	"github.com/user/go-commerce-api/internal/config"
-	"github.com/user/go-commerce-api/internal/model"
+	"github.com/user/go-commerce-api/src/config"
+	"github.com/user/go-commerce-api/src/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

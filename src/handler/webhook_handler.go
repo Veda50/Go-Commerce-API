@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/user/go-commerce-api/internal/config"
-	"github.com/user/go-commerce-api/internal/model"
-	"github.com/user/go-commerce-api/internal/response"
-	"github.com/user/go-commerce-api/internal/service"
+	"github.com/user/go-commerce-api/src/config"
+	"github.com/user/go-commerce-api/src/model"
+	"github.com/user/go-commerce-api/src/response"
+	"github.com/user/go-commerce-api/src/service"
 )
 
 type WebhookHandler struct {

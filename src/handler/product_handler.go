@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/user/go-commerce-api/internal/response"
-	"github.com/user/go-commerce-api/internal/service"
+	"github.com/user/go-commerce-api/src/response"
+	"github.com/user/go-commerce-api/src/service"
 )
 
 type ProductHandler struct {
