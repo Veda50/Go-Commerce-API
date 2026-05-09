@@ -6,15 +6,20 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/user/go-commerce-api/internal/model"
+	"github.com/user/go-commerce-api/internal/repository"
 	"github.com/user/go-commerce-api/internal/service"
 )
 
 type AdminHandler struct {
 	productService *service.ProductService
+	orderRepo      *repository.OrderRepository
 }
 
-func NewAdminHandler(productService *service.ProductService) *AdminHandler {
-	return &AdminHandler{productService: productService}
+func NewAdminHandler(productService *service.ProductService, orderRepo *repository.OrderRepository) *AdminHandler {
+	return &AdminHandler{
+		productService: productService,
+		orderRepo:      orderRepo,
+	}
 }
 
 func (h *AdminHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
@@ -80,4 +85,16 @@ func (h *AdminHandler) UpdateStock(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "stock updated"})
+}
+
+func (h *AdminHandler) ListOrders(w http.ResponseWriter, r *http.Request) {
+	status := r.URL.Query().Get("status")
+	orders, err := h.orderRepo.FindAll(status)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(orders)
 }

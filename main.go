@@ -40,7 +40,7 @@ func main() {
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService)
-	adminHandler := handler.NewAdminHandler(productService)
+	adminHandler := handler.NewAdminHandler(productService, orderRepo)
 	productHandler := handler.NewProductHandler(productService)
 	cartHandler := handler.NewCartHandler(cartService)
 	orderHandler := handler.NewOrderHandler(orderService)
@@ -82,6 +82,7 @@ func main() {
 		r.Put("/products/{id}", adminHandler.UpdateProduct)
 		r.Delete("/products/{id}", adminHandler.DeleteProduct)
 		r.Patch("/products/{id}/stock", adminHandler.UpdateStock)
+		r.Get("/orders", adminHandler.ListOrders)
 	})
 
 	fmt.Printf("Server starting on port %s\n", cfg.Port)

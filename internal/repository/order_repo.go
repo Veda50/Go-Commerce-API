@@ -20,3 +20,13 @@ func (r *OrderRepository) Create(order *model.Order) error {
 func (r *OrderRepository) UpdateStatusByPaymentID(paymentID string, status model.OrderStatus) error {
 	return r.db.Model(&model.Order{}).Where("payment_intent_id = ?", paymentID).Update("status", status).Error
 }
+
+func (r *OrderRepository) FindAll(status string) ([]model.Order, error) {
+	var orders []model.Order
+	db := r.db.Preload("Items.Product")
+	if status != "" {
+		db = db.Where("status = ?", status)
+	}
+	err := db.Find(&orders).Error
+	return orders, err
+}
