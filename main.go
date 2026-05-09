@@ -39,7 +39,7 @@ func main() {
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService)
-	adminHandler := handler.NewAdminHandler(productService)
+	adminHandler := handler.NewAdminHandler(productService, orderService)
 	productHandler := handler.NewProductHandler(productService)
 	cartHandler := handler.NewCartHandler(cartService)
 	orderHandler := handler.NewOrderHandler(orderService)
@@ -79,6 +79,7 @@ func main() {
 		r.Post("/products", adminHandler.CreateProduct)
 		r.Put("/products/{id}", adminHandler.UpdateProduct)
 		r.Delete("/products/{id}", adminHandler.DeleteProduct)
+		r.Patch("/orders/{id}/status", adminHandler.UpdateOrderStatus)
 	})
 
 	fmt.Printf("Server starting on port %s\n", cfg.Port)

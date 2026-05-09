@@ -11,10 +11,14 @@ import (
 
 type AdminHandler struct {
 	productService *service.ProductService
+	orderService   *service.OrderService
 }
 
-func NewAdminHandler(productService *service.ProductService) *AdminHandler {
-	return &AdminHandler{productService: productService}
+func NewAdminHandler(productService *service.ProductService, orderService *service.OrderService) *AdminHandler {
+	return &AdminHandler{
+		productService: productService,
+		orderService:   orderService,
+	}
 }
 
 func (h *AdminHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
@@ -60,4 +64,24 @@ func (h *AdminHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *AdminHandler) UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var req struct {
+		Status model.OrderStatus `json:"status"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.orderService.UpdateOrderStatus(id, req.Status); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "order status updated"})
 }

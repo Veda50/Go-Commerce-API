@@ -93,3 +93,7 @@ func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, error) {
 func (s *OrderService) GetOrder(id string) (*model.Order, error) {
 	return s.orderRepo.FindByID(id)
 }
+
+func (s *OrderService) UpdateOrderStatus(id string, status model.OrderStatus) error {
+	return s.orderRepo.UpdateStatus(id, status)
+}

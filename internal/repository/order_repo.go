@@ -25,3 +25,7 @@ func (r *OrderRepository) FindByID(id string) (*model.Order, error) {
 	}
 	return &order, nil
 }
+
+func (r *OrderRepository) UpdateStatus(id string, status model.OrderStatus) error {
+	return r.db.Model(&model.Order{}).Where("id = ?", id).Update("status", status).Error
+}
