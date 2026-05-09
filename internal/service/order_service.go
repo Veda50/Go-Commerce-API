@@ -10,22 +10,39 @@ import (
 )
 
 type OrderService struct {
-	orderRepo   *repository.OrderRepository
-	cartRepo    *repository.CartRepository
-	productRepo *repository.ProductRepository
-	db          *gorm.DB
+	orderRepo      *repository.OrderRepository
+	cartRepo       *repository.CartRepository
+	productRepo    *repository.ProductRepository
+	userRepo       *repository.UserRepository
+	paymentService *PaymentService
+	db             *gorm.DB
 }
 
-func NewOrderService(orderRepo *repository.OrderRepository, cartRepo *repository.CartRepository, productRepo *repository.ProductRepository, db *gorm.DB) *OrderService {
+func NewOrderService(
+	orderRepo *repository.OrderRepository,
+	cartRepo *repository.CartRepository,
+	productRepo *repository.ProductRepository,
+	userRepo *repository.UserRepository,
+	paymentService *PaymentService,
+	db *gorm.DB,
+) *OrderService {
 	return &OrderService{
-		orderRepo:   orderRepo,
-		cartRepo:    cartRepo,
-		productRepo: productRepo,
-		db:          db,
+		orderRepo:      orderRepo,
+		cartRepo:       cartRepo,
+		productRepo:    productRepo,
+		userRepo:       userRepo,
+		paymentService: paymentService,
+		db:             db,
 	}
 }
 
-func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, error) {
+func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, string, error) {
+	// Ambil user untuk dapat email
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return nil, "", errors.New("user not found")
+	}
+
 	tx := s.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -36,12 +53,12 @@ func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, error) {
 	var cart model.Cart
 	if err := tx.Preload("Items.Product").Where("user_id = ? AND status = ?", userID, model.CartActive).First(&cart).Error; err != nil {
 		tx.Rollback()
-		return nil, errors.New("cart not found or empty")
+		return nil, "", errors.New("cart not found or empty")
 	}
 
 	if len(cart.Items) == 0 {
 		tx.Rollback()
-		return nil, errors.New("cart is empty")
+		return nil, "", errors.New("cart is empty")
 	}
 
 	var total float64
@@ -57,7 +74,7 @@ func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, error) {
 
 	if err := tx.Create(order).Error; err != nil {
 		tx.Rollback()
-		return nil, err
+		return nil, "", err
 	}
 
 	for _, item := range cart.Items {
@@ -69,35 +86,36 @@ func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, error) {
 		}
 		if err := tx.Create(&orderItem).Error; err != nil {
 			tx.Rollback()
-			return nil, err
+			return nil, "", err
 		}
 
 		if err := s.productRepo.DeductStock(tx, item.ProductID, item.Quantity); err != nil {
 			tx.Rollback()
-			return nil, err
+			return nil, "", err
 		}
+	}
+
+	// 5. Create Xendit Invoice
+	invoiceURL, xenditID, err := s.paymentService.CreateInvoiceURL(order.ID, total, user.Email)
+	if err != nil {
+		tx.Rollback()
+		return nil, "", err
+	}
+
+	order.PaymentIntentID = xenditID // Reuse field for Xendit Invoice ID
+	if err := tx.Save(order).Error; err != nil {
+		tx.Rollback()
+		return nil, "", err
 	}
 
 	if err := tx.Model(&cart).Update("status", model.CartCompleted).Error; err != nil {
 		tx.Rollback()
-		return nil, err
+		return nil, "", err
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	return order, nil
-}
-
-func (s *OrderService) GetOrder(id string) (*model.Order, error) {
-	return s.orderRepo.FindByID(id)
-}
-
-func (s *OrderService) UpdateOrderStatus(id string, status model.OrderStatus) error {
-	return s.orderRepo.UpdateStatus(id, status)
-}
-
-func (s *OrderService) ListOrders(status string) ([]model.Order, error) {
-	return s.orderRepo.FindAll(status)
+	return order, invoiceURL, nil
 }

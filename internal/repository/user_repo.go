@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/google/uuid"
 	"github.com/user/go-commerce-api/internal/model"
 	"gorm.io/gorm"
 )
@@ -20,6 +21,15 @@ func (r *UserRepository) Create(user *model.User) error {
 func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
 	var user model.User
 	err := r.db.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *UserRepository) FindByID(id uuid.UUID) (*model.User, error) {
+	var user model.User
+	err := r.db.First(&user, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}

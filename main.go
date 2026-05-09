@@ -35,11 +35,12 @@ func main() {
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
 	productService := service.NewProductService(productRepo)
 	cartService := service.NewCartService(cartRepo, productRepo)
-	orderService := service.NewOrderService(orderRepo, cartRepo, productRepo, db)
+	paymentService := service.NewPaymentService(cfg.XenditKey)
+	orderService := service.NewOrderService(orderRepo, cartRepo, productRepo, userRepo, paymentService, db)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService)
-	adminHandler := handler.NewAdminHandler(productService, orderService)
+	adminHandler := handler.NewAdminHandler(productService)
 	productHandler := handler.NewProductHandler(productService)
 	cartHandler := handler.NewCartHandler(cartService)
 	orderHandler := handler.NewOrderHandler(orderService)
@@ -67,10 +68,8 @@ func main() {
 		r.Delete("/items/{id}", cartHandler.RemoveItem)
 	})
 
-	r.Route("/orders", func(r chi.Router) {
-		r.Use(middleware.Auth(cfg.JWTSecret))
-		r.Post("/checkout", orderHandler.Checkout)
-		r.Get("/{id}", orderHandler.GetOrder)
+	r.Post("/checkout", func(w http.ResponseWriter, r *http.Request) {
+		middleware.Auth(cfg.JWTSecret)(http.HandlerFunc(orderHandler.Checkout)).ServeHTTP(w, r)
 	})
 
 	r.Route("/admin", func(r chi.Router) {
@@ -79,9 +78,6 @@ func main() {
 		r.Post("/products", adminHandler.CreateProduct)
 		r.Put("/products/{id}", adminHandler.UpdateProduct)
 		r.Delete("/products/{id}", adminHandler.DeleteProduct)
-		r.Patch("/products/{id}/stock", adminHandler.UpdateStock)
-		r.Get("/orders", adminHandler.ListOrders)
-		r.Patch("/orders/{id}/status", adminHandler.UpdateOrderStatus)
 	})
 
 	fmt.Printf("Server starting on port %s\n", cfg.Port)

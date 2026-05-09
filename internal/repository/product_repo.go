@@ -48,7 +48,3 @@ func (r *ProductRepository) DeductStock(tx *gorm.DB, productID uint, quantity in
 	return tx.Model(&model.Product{}).Where("id = ?", productID).
 		Update("stock", gorm.Expr("stock - ?", quantity)).Error
 }
-
-func (r *ProductRepository) UpdateStock(id string, stock int) error {
-	return r.db.Model(&model.Product{}).Where("id = ?", id).Update("stock", stock).Error
-}
