@@ -1,72 +1,63 @@
 # Go E-Commerce API
 
-A modular RESTful API for E-Commerce built with Go, GORM, and PostgreSQL.
+Modular RESTful API for E-Commerce built with Go, GORM, and PostgreSQL.
+
+## Portfolio
+This project is built to maintain and demonstrate proficiency in Go backend development, focusing on modular architecture, database transactions, and payment gateway integration.
 
 ## Features
-- **Auth**: Signup & Login with JWT.
-- **Products**: CRUD for products and categories (Admin only for CUD).
-- **Cart**: Manage cart items, stock validation, and subtotal calculation.
-- **Orders**: Transactional checkout process with Xendit Invoice integration.
-- **Admin**: Update stock, view all orders with status filtering.
-- **Payments**: Xendit Invoice with Webhook callback support.
+
+### Completed
+- JWT Authentication and RBAC
+- Product and Category CRUD
+- Cart management with stock validation
+- Transactional checkout with Xendit Invoice
+- Webhook callback for payment status
+- Admin stock management and order tracking
+- Centralized JSON response handling
+
+### Soon
+- S3/R2 Image uploads
+- Product reviews and ratings
+- Shipping API integration
+- Redis caching
+- Unit testing
 
 ## Tech Stack
-- **Language**: Go 1.21+
-- **Framework**: `go-chi/chi` (Router)
-- **ORM**: `GORM` with PostgreSQL driver
-- **Auth**: `golang-jwt/jwt`, `bcrypt`
-- **Payment**: `xendit-go/v6`
+- Go, Chi, GORM, PostgreSQL, Xendit
 
-## Setup Guide
+## Setup
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/user/go-commerce-api.git
-   cd go-commerce-api
-   ```
-
-2. **Configure Environment Variables**
-   Copy `.env.example` to `.env` and fill in the values.
-   ```bash
-   cp .env.example .env
-   ```
-
-3. **Install Dependencies**
-   ```bash
-   go mod download
-   ```
-
-4. **Run the Application**
-   ```bash
-   go run main.go
-   ```
+1. Copy .env.example to .env and fill variables
+2. go mod download
+3. go run main.go
 
 ## API Endpoints
 
 ### Auth
-- `POST /auth/signup` - Register new user
-- `POST /auth/login` - Login and get JWT
+- POST /auth/signup
+- POST /auth/login
 
 ### Products
-- `GET /products` - List products (query param `q` for search)
-- `GET /products/{id}` - Get product detail
+- GET /products
+- GET /products/{id}
 
-### Cart (Protected)
-- `GET /cart` - View current active cart
-- `POST /cart/items` - Add item to cart
-- `PATCH /cart/items/{id}` - Update item quantity
-- `DELETE /cart/items/{id}` - Remove item from cart
+### Cart
+- GET /cart
+- POST /cart/items
+- PATCH /cart/items/{id}
+- DELETE /cart/items/{id}
 
-### Orders (Protected)
-- `POST /checkout` - Create order from cart and get Xendit Invoice URL
-- `GET /orders` - View order history
+### Orders
+- POST /checkout
+- GET /orders
 
-### Admin (Admin Only)
-- `POST /admin/products` - Create product
-- `PUT /admin/products/{id}` - Update product
-- `DELETE /admin/products/{id}` - Delete product
-- `PATCH /admin/products/{id}/stock` - Update stock manually
-- `GET /admin/orders` - View all orders (filter `status=PAID` etc)
+### Admin
+- POST /admin/products
+- PUT /admin/products/{id}
+- DELETE /admin/products/{id}
+- PATCH /admin/products/{id}/stock
+- GET /admin/orders
 
 ### Webhook
-- `POST /webhook/xendit` - Xendit payment callback
+- POST /webhook/xendit
