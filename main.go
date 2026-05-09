@@ -67,8 +67,10 @@ func main() {
 		r.Delete("/items/{id}", cartHandler.RemoveItem)
 	})
 
-	r.Post("/checkout", func(w http.ResponseWriter, r *http.Request) {
-		middleware.Auth(cfg.JWTSecret)(http.HandlerFunc(orderHandler.Checkout)).ServeHTTP(w, r)
+	r.Route("/orders", func(r chi.Router) {
+		r.Use(middleware.Auth(cfg.JWTSecret))
+		r.Post("/checkout", orderHandler.Checkout)
+		r.Get("/{id}", orderHandler.GetOrder)
 	})
 
 	r.Route("/admin", func(r chi.Router) {

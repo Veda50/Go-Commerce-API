@@ -89,3 +89,7 @@ func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, error) {
 
 	return order, nil
 }
+
+func (s *OrderService) GetOrder(id string) (*model.Order, error) {
+	return s.orderRepo.FindByID(id)
+}

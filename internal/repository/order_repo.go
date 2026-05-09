@@ -16,3 +16,12 @@ func NewOrderRepository(db *gorm.DB) *OrderRepository {
 func (r *OrderRepository) Create(order *model.Order) error {
 	return r.db.Create(order).Error
 }
+
+func (r *OrderRepository) FindByID(id string) (*model.Order, error) {
+	var order model.Order
+	err := r.db.Preload("Items.Product").First(&order, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &order, nil
+}
