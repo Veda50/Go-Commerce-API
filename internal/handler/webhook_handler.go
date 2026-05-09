@@ -6,17 +6,18 @@ import (
 
 	"github.com/user/go-commerce-api/internal/config"
 	"github.com/user/go-commerce-api/internal/model"
+	"github.com/user/go-commerce-api/internal/response"
 	"github.com/user/go-commerce-api/internal/service"
 )
 
 type WebhookHandler struct {
-	orderService   *service.OrderService
+	orderService *service.OrderService
 	webhookToken string
 }
 
 func NewWebhookHandler(orderService *service.OrderService, cfg *config.Config) *WebhookHandler {
 	return &WebhookHandler{
-		orderService:   orderService,
+		orderService: orderService,
 		webhookToken: cfg.XenditWebToken,
 	}
 }
@@ -24,7 +25,7 @@ func NewWebhookHandler(orderService *service.OrderService, cfg *config.Config) *
 func (h *WebhookHandler) XenditCallback(w http.ResponseWriter, r *http.Request) {
 	token := r.Header.Get("x-callback-token")
 	if token != h.webhookToken {
-		http.Error(w, "invalid callback token", http.StatusUnauthorized)
+		response.Error(w, http.StatusUnauthorized, "invalid callback token")
 		return
 	}
 
@@ -36,13 +37,13 @@ func (h *WebhookHandler) XenditCallback(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	if payload.Status == "PAID" {
 		if err := h.orderService.UpdateOrderStatus(payload.ID, model.OrderPaid); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			response.Error(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 	}

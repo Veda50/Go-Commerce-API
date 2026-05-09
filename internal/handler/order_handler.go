@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/user/go-commerce-api/internal/middleware"
 	"github.com/user/go-commerce-api/internal/repository"
+	"github.com/user/go-commerce-api/internal/response"
 	"github.com/user/go-commerce-api/internal/service"
 )
 
@@ -25,49 +25,32 @@ func NewOrderHandler(orderService *service.OrderService, orderRepo *repository.O
 func (h *OrderHandler) Checkout(w http.ResponseWriter, r *http.Request) {
 	userIDStr, ok := r.Context().Value(middleware.UserIDKey).(string)
 	if !ok {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		response.Error(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
 
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		http.Error(w, "invalid user id", http.StatusUnauthorized)
-		return
-	}
-
+	userID, _ := uuid.Parse(userIDStr)
 	order, invoiceURL, err := h.orderService.Checkout(userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	response.JSON(w, http.StatusCreated, map[string]interface{}{
 		"order":       order,
 		"invoice_url": invoiceURL,
 	})
 }
 
 func (h *OrderHandler) GetHistory(w http.ResponseWriter, r *http.Request) {
-	userIDStr, ok := r.Context().Value(middleware.UserIDKey).(string)
-	if !ok {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		http.Error(w, "invalid user id", http.StatusUnauthorized)
-		return
-	}
+	userIDStr, _ := r.Context().Value(middleware.UserIDKey).(string)
+	userID, _ := uuid.Parse(userIDStr)
 
 	orders, err := h.orderRepo.FindByUserID(userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(orders)
+	response.JSON(w, http.StatusOK, orders)
 }

@@ -4,15 +4,16 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/user/go-commerce-api/internal/response"
 	"github.com/user/go-commerce-api/internal/service"
 )
 
 type AuthHandler struct {
-	authService *service.AuthService
+	service *service.AuthService
 }
 
-func NewAuthHandler(authService *service.AuthService) *AuthHandler {
-	return &AuthHandler{authService: authService}
+func NewAuthHandler(service *service.AuthService) *AuthHandler {
+	return &AuthHandler{service: service}
 }
 
 func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
@@ -22,19 +23,17 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
-	user, err := h.authService.Signup(req.Email, req.Password)
+	user, err := h.service.Signup(req.Email, req.Password)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		response.Error(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(user)
+	response.JSON(w, http.StatusCreated, user)
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -44,18 +43,18 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
-	token, err := h.authService.Login(req.Email, req.Password)
+	user, token, err := h.service.Login(req.Email, req.Password)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		response.Error(w, http.StatusUnauthorized, "invalid credentials")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	response.JSON(w, http.StatusOK, map[string]interface{}{
+		"user":  user,
 		"token": token,
 	})
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/user/go-commerce-api/internal/model"
 	"github.com/user/go-commerce-api/internal/repository"
+	"github.com/user/go-commerce-api/internal/response"
 	"github.com/user/go-commerce-api/internal/service"
 )
 
@@ -25,42 +26,39 @@ func NewAdminHandler(productService *service.ProductService, orderRepo *reposito
 func (h *AdminHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	var product model.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	if err := h.productService.CreateProduct(&product); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(product)
+	response.JSON(w, http.StatusCreated, product)
 }
 
 func (h *AdminHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	var input model.Product
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	product, err := h.productService.UpdateProduct(id, &input)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(product)
+	response.JSON(w, http.StatusOK, product)
 }
 
 func (h *AdminHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if err := h.productService.DeleteProduct(id); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -74,27 +72,25 @@ func (h *AdminHandler) UpdateStock(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		response.Error(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	if err := h.productService.UpdateStock(id, req.Stock); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "stock updated"})
+	response.JSON(w, http.StatusOK, map[string]string{"message": "stock updated"})
 }
 
 func (h *AdminHandler) ListOrders(w http.ResponseWriter, r *http.Request) {
 	status := r.URL.Query().Get("status")
 	orders, err := h.orderRepo.FindAll(status)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(orders)
+	response.JSON(w, http.StatusOK, orders)
 }
