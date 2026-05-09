@@ -80,6 +80,7 @@ func main() {
 		r.Put("/products/{id}", adminHandler.UpdateProduct)
 		r.Delete("/products/{id}", adminHandler.DeleteProduct)
 		r.Patch("/products/{id}/stock", adminHandler.UpdateStock)
+		r.Get("/orders", adminHandler.ListOrders)
 		r.Patch("/orders/{id}/status", adminHandler.UpdateOrderStatus)
 	})
 

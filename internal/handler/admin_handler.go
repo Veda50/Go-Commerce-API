@@ -105,3 +105,15 @@ func (h *AdminHandler) UpdateStock(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "stock updated"})
 }
+
+func (h *AdminHandler) ListOrders(w http.ResponseWriter, r *http.Request) {
+	status := r.URL.Query().Get("status")
+	orders, err := h.orderService.ListOrders(status)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(orders)
+}

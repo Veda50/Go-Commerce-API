@@ -29,3 +29,13 @@ func (r *OrderRepository) FindByID(id string) (*model.Order, error) {
 func (r *OrderRepository) UpdateStatus(id string, status model.OrderStatus) error {
 	return r.db.Model(&model.Order{}).Where("id = ?", id).Update("status", status).Error
 }
+
+func (r *OrderRepository) FindAll(status string) ([]model.Order, error) {
+	var orders []model.Order
+	db := r.db.Preload("Items.Product")
+	if status != "" {
+		db = db.Where("status = ?", status)
+	}
+	err := db.Order("created_at desc").Find(&orders).Error
+	return orders, err
+}

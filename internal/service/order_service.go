@@ -97,3 +97,7 @@ func (s *OrderService) GetOrder(id string) (*model.Order, error) {
 func (s *OrderService) UpdateOrderStatus(id string, status model.OrderStatus) error {
 	return s.orderRepo.UpdateStatus(id, status)
 }
+
+func (s *OrderService) ListOrders(status string) ([]model.Order, error) {
+	return s.orderRepo.FindAll(status)
+}
