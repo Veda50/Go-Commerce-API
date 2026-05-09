@@ -47,3 +47,7 @@ func (s *ProductService) UpdateProduct(id string, input *model.Product) (*model.
 func (s *ProductService) DeleteProduct(id string) error {
 	return s.productRepo.Delete(id)
 }
+
+func (s *ProductService) UpdateStock(id string, stock int) error {
+	return s.productRepo.SetStock(id, stock)
+}

@@ -81,6 +81,7 @@ func main() {
 		r.Post("/products", adminHandler.CreateProduct)
 		r.Put("/products/{id}", adminHandler.UpdateProduct)
 		r.Delete("/products/{id}", adminHandler.DeleteProduct)
+		r.Patch("/products/{id}/stock", adminHandler.UpdateStock)
 	})
 
 	fmt.Printf("Server starting on port %s\n", cfg.Port)
