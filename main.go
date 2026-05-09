@@ -44,6 +44,7 @@ func main() {
 	productHandler := handler.NewProductHandler(productService)
 	cartHandler := handler.NewCartHandler(cartService)
 	orderHandler := handler.NewOrderHandler(orderService)
+	webhookHandler := handler.NewWebhookHandler(orderService, cfg)
 
 	// Router
 	r := chi.NewRouter()
@@ -71,6 +72,8 @@ func main() {
 	r.Post("/checkout", func(w http.ResponseWriter, r *http.Request) {
 		middleware.Auth(cfg.JWTSecret)(http.HandlerFunc(orderHandler.Checkout)).ServeHTTP(w, r)
 	})
+
+	r.Post("/webhook/xendit", webhookHandler.XenditCallback)
 
 	r.Route("/admin", func(r chi.Router) {
 		r.Use(middleware.Auth(cfg.JWTSecret))
