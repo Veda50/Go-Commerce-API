@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/user/go-commerce-api/internal/config"
+	"github.com/user/go-commerce-api/internal/model"
 	"github.com/user/go-commerce-api/internal/service"
 )
 
@@ -21,7 +22,6 @@ func NewWebhookHandler(orderService *service.OrderService, cfg *config.Config) *
 }
 
 func (h *WebhookHandler) XenditCallback(w http.ResponseWriter, r *http.Request) {
-	// 1. Verifikasi Webhook Token
 	token := r.Header.Get("x-callback-token")
 	if token != h.webhookToken {
 		http.Error(w, "invalid callback token", http.StatusUnauthorized)
@@ -40,9 +40,12 @@ func (h *WebhookHandler) XenditCallback(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Logic update order status akan ada di commit berikutnya
-	// Untuk sekarang kita log saja
-	// fmt.Printf("Received webhook for invoice %s with status %s\n", payload.ID, payload.Status)
+	if payload.Status == "PAID" {
+		if err := h.orderService.UpdateOrderStatus(payload.ID, model.OrderPaid); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 
 	w.WriteHeader(http.StatusOK)
 }

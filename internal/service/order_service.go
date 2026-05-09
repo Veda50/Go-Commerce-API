@@ -37,7 +37,6 @@ func NewOrderService(
 }
 
 func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, string, error) {
-	// Ambil user untuk dapat email
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
 		return nil, "", errors.New("user not found")
@@ -95,14 +94,13 @@ func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, string, error) 
 		}
 	}
 
-	// 5. Create Xendit Invoice
 	invoiceURL, xenditID, err := s.paymentService.CreateInvoiceURL(order.ID, total, user.Email)
 	if err != nil {
 		tx.Rollback()
 		return nil, "", err
 	}
 
-	order.PaymentIntentID = xenditID // Reuse field for Xendit Invoice ID
+	order.PaymentIntentID = xenditID
 	if err := tx.Save(order).Error; err != nil {
 		tx.Rollback()
 		return nil, "", err
@@ -118,4 +116,8 @@ func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, string, error) 
 	}
 
 	return order, invoiceURL, nil
+}
+
+func (s *OrderService) UpdateOrderStatus(paymentID string, status model.OrderStatus) error {
+	return s.orderRepo.UpdateStatusByPaymentID(paymentID, status)
 }
