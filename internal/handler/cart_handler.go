@@ -55,8 +55,11 @@ func (h *CartHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CartHandler) RemoveItem(w http.ResponseWriter, r *http.Request) {
+	userIDStr := r.Context().Value(middleware.UserIDKey).(string)
+	userID, _ := uuid.Parse(userIDStr)
 	id := chi.URLParam(r, "id")
-	if err := h.service.RemoveFromCart(id); err != nil {
+
+	if err := h.service.RemoveFromCart(userID, id); err != nil {
 		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -65,7 +68,10 @@ func (h *CartHandler) RemoveItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CartHandler) UpdateQuantity(w http.ResponseWriter, r *http.Request) {
+	userIDStr := r.Context().Value(middleware.UserIDKey).(string)
+	userID, _ := uuid.Parse(userIDStr)
 	id := chi.URLParam(r, "id")
+
 	var req struct {
 		Quantity int `json:"quantity"`
 	}
@@ -75,7 +81,7 @@ func (h *CartHandler) UpdateQuantity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.UpdateQuantity(id, req.Quantity); err != nil {
+	if err := h.service.UpdateQuantity(userID, id, req.Quantity); err != nil {
 		response.Error(w, http.StatusBadRequest, err.Error())
 		return
 	}

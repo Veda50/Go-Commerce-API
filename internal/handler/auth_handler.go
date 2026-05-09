@@ -47,14 +47,13 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, token, err := h.service.Login(req.Email, req.Password)
+	token, err := h.service.Login(req.Email, req.Password)
 	if err != nil {
 		response.Error(w, http.StatusUnauthorized, "invalid credentials")
 		return
 	}
 
 	response.JSON(w, http.StatusOK, map[string]interface{}{
-		"user":  user,
 		"token": token,
 	})
 }
