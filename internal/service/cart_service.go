@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/user/go-commerce-api/src/model"
-	"github.com/user/go-commerce-api/src/repository"
+	"github.com/user/go-commerce-api/internal/model"
+	"github.com/user/go-commerce-api/internal/repository"
 	"gorm.io/gorm"
 )
 

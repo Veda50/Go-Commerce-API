@@ -7,12 +7,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
-	"github.com/user/go-commerce-api/src/config"
-	"github.com/user/go-commerce-api/src/database"
-	"github.com/user/go-commerce-api/src/handler"
-	"github.com/user/go-commerce-api/src/middleware"
-	"github.com/user/go-commerce-api/src/repository"
-	"github.com/user/go-commerce-api/src/service"
+	"github.com/user/go-commerce-api/internal/config"
+	"github.com/user/go-commerce-api/internal/database"
+	"github.com/user/go-commerce-api/internal/handler"
+	"github.com/user/go-commerce-api/internal/middleware"
+	"github.com/user/go-commerce-api/internal/repository"
+	"github.com/user/go-commerce-api/internal/service"
 )
 
 func main() {

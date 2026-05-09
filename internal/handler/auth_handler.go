@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/user/go-commerce-api/src/response"
-	"github.com/user/go-commerce-api/src/service"
+	"github.com/user/go-commerce-api/internal/response"
+	"github.com/user/go-commerce-api/internal/service"
 )
 
 type AuthHandler struct {

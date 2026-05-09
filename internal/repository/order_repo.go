@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/google/uuid"
-	"github.com/user/go-commerce-api/src/model"
+	"github.com/user/go-commerce-api/internal/model"
 	"gorm.io/gorm"
 )
 

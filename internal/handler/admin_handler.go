@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/user/go-commerce-api/src/model"
-	"github.com/user/go-commerce-api/src/repository"
-	"github.com/user/go-commerce-api/src/response"
-	"github.com/user/go-commerce-api/src/service"
+	"github.com/user/go-commerce-api/internal/model"
+	"github.com/user/go-commerce-api/internal/repository"
+	"github.com/user/go-commerce-api/internal/response"
+	"github.com/user/go-commerce-api/internal/service"
 )
 
 type AdminHandler struct {

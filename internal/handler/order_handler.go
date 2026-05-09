@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/user/go-commerce-api/src/middleware"
-	"github.com/user/go-commerce-api/src/repository"
-	"github.com/user/go-commerce-api/src/response"
-	"github.com/user/go-commerce-api/src/service"
+	"github.com/user/go-commerce-api/internal/middleware"
+	"github.com/user/go-commerce-api/internal/repository"
+	"github.com/user/go-commerce-api/internal/response"
+	"github.com/user/go-commerce-api/internal/service"
 )
 
 type OrderHandler struct {
