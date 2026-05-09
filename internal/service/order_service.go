@@ -72,7 +72,6 @@ func (s *OrderService) Checkout(userID uuid.UUID) (*model.Order, error) {
 			return nil, err
 		}
 
-		// Potong stok produk
 		if err := s.productRepo.DeductStock(tx, item.ProductID, item.Quantity); err != nil {
 			tx.Rollback()
 			return nil, err
