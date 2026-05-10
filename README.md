@@ -31,7 +31,7 @@ This project is built to maintain and demonstrate proficiency in Go backend deve
 1. Copy .env.example to .env and fill variables
 2. go mod download
 3. Expose port 8080 for webhooks:
-   - Cloudflare Tunnel: `cloudflared tunnel --url http://localhost:8080` (or use tunnel.vedabe.com configuration)
+   - Cloudflare Tunnel: `cloudflared tunnel --url http://localhost:8080` (or use local.vedabe.com configuration)
    - Alternatives: `ngrok http 8080` or Xendit CLI
 4. go run main.go
 
